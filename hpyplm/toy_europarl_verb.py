@@ -6,7 +6,7 @@ import sys
 
 from nltk.tokenize.treebank import TreebankWordTokenizer
 
-VERBS = set(["geben", "helfen", "sagen", "passieren", "schicken", "bringen"])
+VERBS = set(["geben", "helfen", "sagen", "machen", "arbeiten", "bringen"])
 
 tokenizer = TreebankWordTokenizer()
 
@@ -22,8 +22,18 @@ if __name__ == "__main__":
                 words = tokenizer.tokenize(sentence)
                 sentences[words[-1]].append(words)
 
+    good_verbs = [x for x in sentences if len(sentences[x]) > 20]
+
+    test_file = open("german/test.txt", 'w')
+
     print("COUNT:")
-    for ii in sentences:
+    for ii in good_verbs:
         print("%s\t%i" % (ii, len(sentences[ii])))
 
+        o = open("german/verb_%s.txt" % ii, 'w')
 
+        for (jj, sent) in enumerate(sentences[ii]):
+            if jj % 5 == 0:
+                test_file.write("%s\n" % ' '.join(sent))
+            else:
+                o.write("%s\n" % ' '.join(sent))

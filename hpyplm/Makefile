@@ -1,3 +1,12 @@
+GPP = g++-4.7
+
+ifeq (`which g++-4.7`,)
+	GPP = g++
+endif
+
+clean:
+	rm *.o hpyplm dhpyplm dhpyplm_train dhpyplm_query incremental_query
+
 all: hpyplm dhpyplm
 
 hpyplm: hpyplm.cc
@@ -8,30 +17,38 @@ dhpyplm: dhpyplm.cc
 
 ## stuff below here is optional
 
-BOOST_ROOT=/cab0/tools/boost-1.49.0
+BOOST_ROOT=/opt/local/include/boost
 BOOST_INCLUDE=$(BOOST_ROOT)/include
-BOOST_SERIALIZATION=$(BOOST_ROOT)/lib/libboost_serialization.a
+BOOST_SERIALIZATION=-lboost_serialization-mt
+
+INCLUDEDIRS =-I../../../ -I/opt/local/include/ \
+	-I/fs/clip-software/boost_1_40_0/include -I..
+
+LIBDIRS =-L/usr/local/lib/ \
+	 -L/opt/local/lib -L/fs/clip-software/boost_1_40_0/$(ARCH)/lib/
 
 hpyplm_train: hpyplm_train.cc
-	g++ -std=c++11 -O3 -Wall -I$(BOOST_INCLUDE) -I.. $< -o $@ $(BOOST_SERIALIZATION)
+	$(GPP) -std=c++11 -O3 -Wall $(INCLUDEDIRS) $(LIBDIRS) $< -o $@ $(BOOST_SERIALIZATION)
 
 hpyplm_query: hpyplm_query.cc
-	g++ -std=c++11 -O3 -Wall -I$(BOOST_INCLUDE) -I.. $< -o $@ $(BOOST_SERIALIZATION)
+	$(GPP) -std=c++11 -O3 -Wall $(INCLUDEDIRS) $(LIBDIRS) $< -o $@ $(BOOST_SERIALIZATION)
 
 hpyplm_query_observe: hpyplm_query_observe.cc
-	g++ -std=c++11 -O3 -Wall -I$(BOOST_INCLUDE) -I.. $< -o $@ $(BOOST_SERIALIZATION)
+	$(GPP) -std=c++11 -O3 -Wall $(INCLUDEDIRS) $(LIBDIRS) $< -o $@ $(BOOST_SERIALIZATION)
 
+incremental_query: incremental_query.cc
+	$(GPP) -std=c++11 -O3 -Wall $(INCLUDEDIRS) $(LIBDIRS) $< -o $@ $(BOOST_SERIALIZATION)
 
 dhpyplm_train: dhpyplm_train.cc
-	g++ -std=c++11 -O3 -Wall -I$(BOOST_INCLUDE) -I.. $< -o $@ $(BOOST_SERIALIZATION)
+	$(GPP) -std=c++11 -O3 -Wall $(INCLUDEDIRS) $(LIBDIRS) $< -o $@ $(BOOST_SERIALIZATION)
 
 dhpyplm_query: dhpyplm_query.cc
-	g++ -std=c++11 -O3 -Wall -I$(BOOST_INCLUDE) -I.. $< -o $@ $(BOOST_SERIALIZATION)
+	$(GPP) -std=c++11 -O3 -Wall $(INCLUDEDIRS) $(LIBDIRS) $< -o $@ $(BOOST_SERIALIZATION)
 
 CDEC = ../../cdec
 cdec_ff_hpyplm.o: cdec_ff_hpyplm.cc
-	g++ -shared -fPIC -std=c++11 -O3 -g -Wall -I$(BOOST_INCLUDE) -I.. -I$(CDEC)/utils -I$(CDEC)/mteval -I$(CDEC)/decoder $< -c
+	$(GPP) -shared -fPIC -std=c++11 -O3 -g -Wall $(INCLUDEDIRS) $(LIBDIRS) -I$(CDEC)/utils -I$(CDEC)/mteval -I$(CDEC)/decoder $< -c
 
 libcdec_ff_hpyplm.so: cdec_ff_hpyplm.o
-	g++ -shared -Wl,-soname,$@ -o $@ $<
+	$(GPP) -shared -Wl,-soname,$@ -o $@ $<
 
