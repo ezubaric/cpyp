@@ -19,11 +19,9 @@ typedef const int cint;
 typedef unsigned int uint;
 typedef const unsigned int cuint;
 
-Dict dict;
-
 int writeReport(cint id, cuint vocab_size, cint sos, cint eos,
                 const vector<uint>& sentence,
-                const vector<DAPYPLM<kORDER>>& lms,
+                const vector<DAPYPLM<kORDER>>& lms, const Dict& dict,
                 fstream* outfile) { // NOLINT
   vector<unsigned> ctx(kORDER - 1, sos);
   vector<double> probs(lms.size(), 0.0);
@@ -39,14 +37,15 @@ int writeReport(cint id, cuint vocab_size, cint sos, cint eos,
     // Go through each of the language models
     for (uint vv=0; vv < lms.size(); ++vv) {
       double lp = log(lms[vv].prob(word, ctx)) / log(2);
-      cerr << "p(" << dict.Convert(word) << " |";
+      std::string long_form = dict.Convert(word);
+      cerr << "p(" << long_form << " |";
       for (unsigned j = ctx.size() + 1 - kORDER; j < ctx.size(); ++j)
         cerr << ' ' << dict.Convert(ctx[j]);
       cerr << ", " << vv;
       cerr << ") = " << lp << endl;
       ctx.push_back(word);
       probs[vv] -= lp;
-      (*outfile) << id << "\t" << ii << "\t" << dict.Convert(word) <<
+      (*outfile) << id << "\t" << ii << "\t" << dict.Convert(word) << "\t" <<
           vv << "\t" << probs[vv] << endl;
     }
     if (word < vocab_size) cnt++;
@@ -82,17 +81,20 @@ int main(int argc, char** argv) {
   vector<DAPYPLM<kORDER>> dlm(num_domains, DAPYPLM<kORDER>(latent_lm));
   for (unsigned i = 0; i < num_domains; ++i)
     ia & dlm[i];
-  const unsigned max_iv = dict.max();
-  const unsigned kSOS = dict.Convert("<s>");
-  const unsigned kEOS = dict.Convert("</s>");
+  cint max_iv = dict.max();
+  cint kSOS = dict.Convert("<s>");
+  cint kEOS = dict.Convert("</s>");
+
+  cerr << "Done reading LM and dict: " << max_iv << " " << kSOS << " to " << kEOS << "." << endl;
+
   set<unsigned> tv;
   vector<vector<unsigned> > test;
   ReadFromFile(test_file, &dict, &test, &tv);
 
-  fstream outfile((output + ".topics").c_str(), ios::out);
+  fstream outfile((output).c_str(), ios::out);
   int test_sent = 0;
   for (auto& s : test) {
-    writeReport(test_sent++, max_iv, kSOS, kEOS, s, dlm, &outfile);
+    writeReport(test_sent++, max_iv, kSOS, kEOS, s, dlm, dict, &outfile);
   }
 
 }

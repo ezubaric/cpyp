@@ -37,7 +37,8 @@ hpyplm_query_observe: hpyplm_query_observe.cc
 	$(GPP) -std=c++11 -O3 -Wall $(INCLUDEDIRS) $(LIBDIRS) $< -o $@ $(BOOST_SERIALIZATION)
 
 incremental_query: incremental_query.cc
-	$(GPP) -std=c++11 -O3 -Wall $(INCLUDEDIRS) $(LIBDIRS) $< -o $@ $(BOOST_SERIALIZATION)
+	$(GPP) -std=c++11 -Wall -DEBUG --save-temps -ggdb $(INCLUDEDIRS) $(LIBDIRS) $< -o $@ $(BOOST_SERIALIZATION)
+	#$(GPP) -std=c++11 -O3 -Wall $(INCLUDEDIRS) $(LIBDIRS) $< -o $@ $(BOOST_SERIALIZATION)
 
 dhpyplm_train: dhpyplm_train.cc
 	$(GPP) -std=c++11 -O3 -Wall $(INCLUDEDIRS) $(LIBDIRS) $< -o $@ $(BOOST_SERIALIZATION)
